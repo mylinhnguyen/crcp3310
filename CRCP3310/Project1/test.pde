@@ -1,9 +1,10 @@
 BufferedReader reader;
-char nextChar;
-int[] alphaCount = new int[26];
-int[] alice = new int[5];
-color[] pColor = new color[26];
-int aliceCount = 0, charCount = 0,low,high;
+int[] alphaCount = new int[26]; //counts how many times each letter appears
+char[] alice = new char[5]; //helper array to find the word "alice"
+int cursor = 0;
+String check;
+color[] pColor = new color[26]; //creates color for each letter
+int aliceCount = 0, charCount = 0, low, high; //counts how many times "alice" appears, counts how many characters are in the text, variable for minimun and maximum
 PImage picture = createImage(500,400,RGB);
 PGraphics barG;
 int screen = 0;
@@ -12,6 +13,7 @@ void setup()
   size(1100,800);
   countFrequencies();
   prepareBarGraph();
+  println(aliceCount);
 }
 
 void draw() 
@@ -66,19 +68,18 @@ void prepareBarGraph() {
       barG.text(alphaCount[i],barG.width-100,(barG.height/26)*i+23);
       barG.fill(pColor[i],100);
       barG.rect(40,(barG.height/26)*i, map(alphaCount[i],0,alphaCount[high],0,barG.width-150), barG.height/26);
-    }
-    
-    
+    } 
   }
-  
   barG.endDraw();  
 }
 
 void initialize() {
   for(int i = 0; i < 26; i++) {
     alphaCount[i] = 0; 
-    
   } 
+  for(int j = 0; j < 5; j++) {
+    alice[j] = ' '; 
+  }
   pColor[0] = color(255,0,0);
   pColor[1] = color(255,155,153);
   pColor[2] = color(255,128,0);
@@ -105,11 +106,6 @@ void initialize() {
   pColor[23] = color(255,153,204);
   pColor[24] = color(255,213,0);
   pColor[25] = color(255,213,213);
-  alice[0]='a';
-  alice[1]='l';
-  alice[2]='i';
-  alice[3]='c';
-  alice[4]='e';
   
 }
 
@@ -135,6 +131,23 @@ int findMax() {
   }
   return loc;
 }
+void isAlice(char nextInput) {
+  if(cursor > 4) {
+    alice[0] = alice[1];
+    alice[1] = alice[2];
+    alice[2] = alice[3];
+    alice[3] = alice[4];
+    alice[4] = nextInput;
+    if(alice[0] == 'a') {
+      check = new String(alice);
+      if(check.equals("alice"))
+      println(check);
+      aliceCount++;
+    }
+  }
+  else alice[cursor++] = nextInput;
+  
+}
 void countFrequencies() {
   initialize();
   int i = 0;
@@ -151,7 +164,7 @@ void countFrequencies() {
       char letter = (char)Character.toLowerCase(character);
       alphaCount[letter-97]++;
       picture.pixels[i++] = pColor[letter-97];
-      
+      isAlice(letter);
       //add if alice method
     }
     updatePixels();
