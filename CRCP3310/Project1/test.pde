@@ -4,28 +4,76 @@ int[] alphaCount = new int[26];
 int[] alice = new int[5];
 color[] pColor = new color[26];
 int aliceCount = 0, charCount = 0,low,high;
-PImage picture = createImage(400,600,RGB);
+PImage picture = createImage(500,400,RGB);
+PGraphics barG;
 int screen = 0;
 void setup() 
 {
+  size(1100,800);
   countFrequencies();
+  prepareBarGraph();
 }
 
 void draw() 
 {
   if(screen == 0) drawAlphaCount();
-  else {background(0);}//drawBarGraph();
+  else drawBarGraph();
 }
 void mouseClicked() {
  if(screen == 0) screen = 1;
  else screen = 0;
 }
+
 void drawAlphaCount() {
- image(picture,0,0,width*2,height*2);
+  background(240);
+  image(picture,0,0,width,height);
 }
+
 void drawBarGraph() {
-  
+  image(barG,0,0);
 }
+
+void prepareBarGraph() {
+  barG = createGraphics(1100,800);
+  barG.beginDraw();
+  barG.background(50);
+  int letter;
+  low = findMin();
+  high = findMax();
+ 
+  for(int i = 0; i < alphaCount.length;i++) {  
+    letter = 65+i;
+    barG.fill(pColor[i],255);
+    barG.stroke(pColor[i]);
+    if(i == high) {
+      barG.textSize(30);
+      barG.text((char)letter,10,(barG.height/26)*i+23);
+      barG.text(alphaCount[i],barG.width-100,(barG.height/26)*i+25);
+      barG.fill(pColor[i],255);
+      barG.rect(40,(barG.height/26)*i, map(alphaCount[i],0,alphaCount[high],0,barG.width-150), barG.height/26);
+    }
+    else if(i == low) {
+      barG.textSize(30);
+      barG.text((char)letter,10,(barG.height/26)*i+23);
+      barG.text(alphaCount[i],barG.width-100,(barG.height/26)*i+25);
+      barG.fill(pColor[i],255);
+      barG.rect(40,(barG.height/26)*i, map(alphaCount[i],0,alphaCount[high],0,barG.width-150), barG.height/26);
+    }
+    else {
+      barG.textSize(15);
+      barG.text((char)letter,10,(barG.height/26)*i+20);
+      barG.textSize(20);
+      barG.text(alphaCount[i],barG.width-100,(barG.height/26)*i+23);
+      barG.fill(pColor[i],100);
+      barG.rect(40,(barG.height/26)*i, map(alphaCount[i],0,alphaCount[high],0,barG.width-150), barG.height/26);
+    }
+    
+    
+  }
+  
+  barG.endDraw();  
+}
+
 void initialize() {
   for(int i = 0; i < 26; i++) {
     alphaCount[i] = 0; 
