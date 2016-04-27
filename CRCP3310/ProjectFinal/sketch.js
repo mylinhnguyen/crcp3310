@@ -2,26 +2,24 @@ var destroyer;
 var laser;
 var ufo;
 var testufo = [];
-var img;
-
+var number;
 
 function setup() {
 	createCanvas(800,500);
 	destroyer = new Destroyer();
 	laser = new Laser(this.position.x + size/2, this.position.y);
-	img = loadImage("ufo.png");
-	createUFOs(10);
+	createUFOs(2);
 }
 
 function createUFOs(amount) {
-	//testufo[i] = new UFO(createVector(100 + 100 * i, y), 30);
+	number = amount;
 	var i = 0;
 	for (var y = 100; y < height; y = y + 100) {
 		for (var x = 100; x < width; x = x + 100) {
 			testufo[i] = new UFO(createVector(x, y), 30);
 			i++;
 			if (i == amount)
-				break;
+				return;
 		}
 	}
 }
@@ -33,7 +31,7 @@ function draw() {
 	laser.move();
 	destroyer.draw();
 	laser.update(this.position.x + size/2);
-	for (var i = 0; i < 5; i++) {
+	for (var i = 0; i < number; i++) {
 		testufo[i].draw();
 		testufo[i].move();
 	}
@@ -50,16 +48,14 @@ function draw() {
 		laser.pew();
 	}
 }
-function hit() {
 
-	return false;
-}
-
+/*
 function play() {
 	setup();
 	createUFOs(10);
 	draw();
 }
+*/
 ///////////////////////////////////////////////////////
 //Destroyer functions
 function Destroyer() {
@@ -129,8 +125,7 @@ function UFO(pos, size) {
 UFO.prototype.draw = function draw() {
 	stroke(0,200,0);
 	fill(0,250,0);
-	image(img, this.position.x, this.position.y);
-	//ellipse(this.position.x, this.position.y, this.size, this.size);
+	ellipse(this.position.x, this.position.y, this.size, this.size);
 }
 //
 UFO.prototype.move = function move() {
@@ -149,8 +144,3 @@ UFO.prototype.move = function move() {
 	}
 }
 //
-UFO.prototype.destroyed = function destroyed() {
-
-}
-
-play();
