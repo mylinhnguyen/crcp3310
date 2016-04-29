@@ -1,39 +1,40 @@
 var destroyer;
-var laser;
 var ufo;
-var testufo = [];
+var enemy = [];
 var number;
 
 function setup() {
 	createCanvas(800,500);
 	destroyer = new Destroyer();
-	laser = new Laser(this.position.x + size/2, this.position.y);
-	createUFOs(2);
+	createUFOs(5);
 }
 
 function createUFOs(amount) {
 	number = amount;
 	var i = 0;
-	for (var y = 100; y < height; y = y + 100) {
-		for (var x = 100; x < width; x = x + 100) {
-			testufo[i] = new UFO(createVector(x, y), 30);
+	for (var y = 100; y < height; y = y + 50) {
+		for (var x = 100; x < width; x = x + 50) {
+			enemy[i] = new UFO(createVector(x, y), 30);
 			i++;
 			if (i == amount)
 				return;
 		}
 	}
 }
-function colision() {
-	
+
+function collision(enemy) {
+	for (var i = 0; i < destroyer.ammo; i++) {
+		if (enemy.)
+	}
 }
+
 function draw() {
 	background(150);
-	laser.move();
 	destroyer.draw();
-	laser.update(this.position.x + size/2);
 	for (var i = 0; i < number; i++) {
-		testufo[i].draw();
-		testufo[i].move();
+		enemy[i].draw();
+		enemy[i].move();
+		collision(testufo[i]);
 	}
 	if (keyIsDown(LEFT_ARROW)) {
 		destroyer.move(-5);
@@ -42,92 +43,100 @@ function draw() {
 		destroyer.move(5);
 	}
 	if (keyCode == UP_ARROW) {
-		laser.pew();
+		destroyer.pew();
 	}
 	else if (keyIsDown(UP_ARROW)) {
-		laser.pew();
+		destroyer.pew();
 	}
+	
 }
 
-/*
-function play() {
-	setup();
-	createUFOs(10);
-	draw();
-}
-*/
 ///////////////////////////////////////////////////////
 //Destroyer functions
 function Destroyer() {
 	position = createVector(width/2, height - 50);
 	size = 30;
-	value = 0;
+	laser = [];
+	ammo = 3;
+	laser[0] = new Laser(position.x, position.y);
 }
 //changes position of Destroyer and keeps within boundries
 Destroyer.prototype.move = function move(value) {
-	position.x += value;
 	if (position.x < 0) 
 		position.x = 0;
 	else if (position.x > width - size)
 		position.x = width - size;
+	position.x += value;
 }
 
 Destroyer.prototype.draw = function draw() {
 	stroke(0);
 	fill(200,100,80);
 	rect(position.x, position.y, size, size);
-	laser.draw();
+	laser[0].draw();
+	laser[0].move();
+}
+
+Destroyer.prototype.pew = function pew() {
+	//check if each laser is ready to be fired
+	laser[0].fire(position.x);
 }
 ///////////////////////////////////////////////////////
 //Laser functions
 function Laser(x, y) {
-	laser_position = createVector(x, y);
+	this.laser_position = createVector(x, y);
 	reloadY = y;
 	length = 10;
-	pewpew = false;
+	this.ready = false;
 }
-//draws the laser
+
 Laser.prototype.draw = function draw() {
-	if (pewpew) {
-		stroke(250,0,0);
-		line(laser_position.x, laser_position.y, laser_position.x, laser_position.y + length);
+	if (this.ready) {
+		strokeWeight(3);
+		stroke(200,0,0);
+		line(this.laser_position.x, this.laser_position.y, this.laser_position.x, this.laser_position.y + length);
+	}
+	else {
+
 	}
 }
-//changes the y position of the laser to create the pew-pew movement
+
 Laser.prototype.move = function move() {
-	if (pewpew) {
-		laser_position.y -= 5;
-		if (laser_position.y < -length) 
-			laser.reset();
+	if (this.ready) {
+		this.laser_position.y -= 5;
+		if (this.laser_position.y < 0) {
+			this.ready = false;
+			this.laser_position.y = reloadY;
+		}
+	}
+	else {}
+		//this.laser_position.y = reloadY;
+}
+
+Laser.prototype.fire = function fire(x) {
+	if (!this.ready) {
+		this.laser_position.x = x;
+		this.ready = true;
 	}
 }
-Laser.prototype.update = function update(x) {
-	if (!pewpew)
-		laser_position.x = x;
-}
-//
-Laser.prototype.pew = function pew() {
-	pewpew = true;
-}
-//called to reset the laser beam
-Laser.prototype.reset = function reset() {
-	pewpew = false;
-	laser_position.y = reloadY;
-}
+
 ///////////////////////////////////////////////////////
 //UFO functions
 function UFO(pos, size) {
 	this.position = pos;
 	this.size = size;
 	this.speed = 2;
+	this.isDestroyed = false;
 }
-//
+
 UFO.prototype.draw = function draw() {
-	stroke(0,200,0);
-	fill(0,250,0);
-	ellipse(this.position.x, this.position.y, this.size, this.size);
+	if (!this.isDestroyed) {
+		stroke(0,200,0);
+		fill(0,250,0);
+		ellipse(this.position.x, this.position.y, this.size, this.size);
+	}	
 }
-//
+
 UFO.prototype.move = function move() {
 	this.position.x += this.speed;
 	if (this.position.x < this.size) {
@@ -143,4 +152,7 @@ UFO.prototype.move = function move() {
 		else this.position.y += 4;
 	}
 }
-//
+
+UFO.prototype.destroyed = function destroyed() {
+	this.isDestroyed = true;
+}
