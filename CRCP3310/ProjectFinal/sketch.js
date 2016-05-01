@@ -22,19 +22,13 @@ function createUFOs(amount) {
 	}
 }
 
-function collision(enemy) {
-	for (var i = 0; i < destroyer.ammo; i++) {
-		if (enemy.)
-	}
-}
-
 function draw() {
 	background(150);
 	destroyer.draw();
 	for (var i = 0; i < number; i++) {
 		enemy[i].draw();
 		enemy[i].move();
-		collision(testufo[i]);
+		//collision(testufo[i]);
 	}
 	if (keyIsDown(LEFT_ARROW)) {
 		destroyer.move(-5);
@@ -42,23 +36,27 @@ function draw() {
 	else if (keyIsDown(RIGHT_ARROW)) {
 		destroyer.move(5);
 	}
-	if (keyCode == UP_ARROW) {
+	if (keyIsDown(UP_ARROW)) {
 		destroyer.pew();
-	}
-	else if (keyIsDown(UP_ARROW)) {
-		destroyer.pew();
-	}
-	
+	}	
 }
 
+function collide(laser) {
+	for (var i = 0; i < number; i++) {
+		if (enemy[i].position.x - enemy[i].size/2 <= laser.laser_position.x  && laser.laser_position.x <= enemy[i].position.x + enemy[i].size/2 &&
+				enemy[i].position.y - enemy[i].size/2 <= laser.laser_position.y && laser.laser_position.y <= enemy[i].position.y + enemy[i].size/2 ||
+				enemy[i].position.y - enemy[i].size <= laser.laser_position.y + laser.length && laser.laser_position.y + laser.length <= enemy[i].position.y + enemy[i].size/2)
+					enemy[i].destroyed();
+	}
+}
 ///////////////////////////////////////////////////////
 //Destroyer functions
 function Destroyer() {
 	position = createVector(width/2, height - 50);
 	size = 30;
-	laser = [];
-	ammo = 3;
-	laser[0] = new Laser(position.x, position.y);
+	ammo = new Ammo(10);
+	fire_rate = 50;
+	counter = 0;
 }
 //changes position of Destroyer and keeps within boundries
 Destroyer.prototype.move = function move(value) {
@@ -70,16 +68,19 @@ Destroyer.prototype.move = function move(value) {
 }
 
 Destroyer.prototype.draw = function draw() {
-	stroke(0);
+	noStroke();
 	fill(200,100,80);
 	rect(position.x, position.y, size, size);
-	laser[0].draw();
-	laser[0].move();
+	counter++;
+	ammo.draw();
 }
 
 Destroyer.prototype.pew = function pew() {
 	//check if each laser is ready to be fired
-	laser[0].fire(position.x);
+	if (counter > fire_rate) {
+		ammo.fire(position.x, position.y);
+		counter = 0;
+	}
 }
 ///////////////////////////////////////////////////////
 //Laser functions
@@ -87,6 +88,7 @@ function Laser(x, y) {
 	this.laser_position = createVector(x, y);
 	reloadY = y;
 	length = 10;
+	this.speed = 5;
 	this.ready = false;
 }
 
@@ -96,27 +98,44 @@ Laser.prototype.draw = function draw() {
 		stroke(200,0,0);
 		line(this.laser_position.x, this.laser_position.y, this.laser_position.x, this.laser_position.y + length);
 	}
-	else {
-
-	}
 }
 
 Laser.prototype.move = function move() {
 	if (this.ready) {
-		this.laser_position.y -= 5;
+		this.laser_position.y -= this.speed;
 		if (this.laser_position.y < 0) {
-			this.ready = false;
 			this.laser_position.y = reloadY;
+			this.ready = false;
 		}
 	}
-	else {}
-		//this.laser_position.y = reloadY;
 }
 
-Laser.prototype.fire = function fire(x) {
-	if (!this.ready) {
-		this.laser_position.x = x;
-		this.ready = true;
+Laser.prototype.release = function release(bool, newX, newY) {
+	this.laser_position = createVector(newX, newY);
+	this.ready = bool;
+}
+///////////////////////////////////////////////////////
+var Ammo = function(size) {
+	this.pool = [];
+	this.counter = 0;
+	this.size = size;
+	for (var i = 0; i < size; i++)
+		this.pool[i] = new Laser(position.x, position.y);
+}
+
+Ammo.prototype.fire = function fire(x, y) {
+	this.pool[this.counter].release(true, x, y);
+	this.counter++;
+	if (this.counter >= this.size)
+		this.counter = 0;
+	console.log("Firing");
+}
+
+Ammo.prototype.draw = function draw() {
+	for (var i = 0; i < this.size; i++) {
+		this.pool[i].draw();
+		this.pool[i].move();
+		collide(this.pool[i]);
 	}
 }
 
@@ -125,13 +144,13 @@ Laser.prototype.fire = function fire(x) {
 function UFO(pos, size) {
 	this.position = pos;
 	this.size = size;
-	this.speed = 2;
+	this.speed = 4;
 	this.isDestroyed = false;
 }
 
 UFO.prototype.draw = function draw() {
 	if (!this.isDestroyed) {
-		stroke(0,200,0);
+		noStroke();
 		fill(0,250,0);
 		ellipse(this.position.x, this.position.y, this.size, this.size);
 	}	
