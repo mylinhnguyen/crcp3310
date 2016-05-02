@@ -2,6 +2,8 @@ var destroyer;
 var ufo;
 var enemy = [];
 var number;
+var enemy_left;
+var end_screen = false;
 
 function setup() {
 	createCanvas(800,500);
@@ -10,7 +12,7 @@ function setup() {
 }
 
 function createUFOs(amount) {
-	number = amount;
+	enemy_left = number = amount;
 	var i = 0;
 	for (var y = 100; y < height; y = y + 50) {
 		for (var x = 100; x < width; x = x + 50) {
@@ -23,30 +25,41 @@ function createUFOs(amount) {
 }
 
 function draw() {
-	background(150);
-	destroyer.draw();
-	for (var i = 0; i < number; i++) {
-		enemy[i].draw();
-		enemy[i].move();
-		//collision(testufo[i]);
+	if (!end_screen) {
+		background(150);
+		destroyer.draw();
+		for (var i = 0; i < number; i++) {
+			enemy[i].draw();
+			enemy[i].move();
+		}
+		if (keyIsDown(LEFT_ARROW)) {
+			destroyer.move(-5);
+		}
+		else if (keyIsDown(RIGHT_ARROW)) {
+			destroyer.move(5);
+		}
+		if (keyIsDown(UP_ARROW)) {
+			destroyer.pew();
+		}	
+		if (enemy_left == 0)
+			end_screen = true;
 	}
-	if (keyIsDown(LEFT_ARROW)) {
-		destroyer.move(-5);
+	else {
+		//draw end screen here
+		background(0);
 	}
-	else if (keyIsDown(RIGHT_ARROW)) {
-		destroyer.move(5);
-	}
-	if (keyIsDown(UP_ARROW)) {
-		destroyer.pew();
-	}	
 }
 
 function collide(laser) {
 	for (var i = 0; i < number; i++) {
 		if (enemy[i].position.x - enemy[i].size/2 <= laser.laser_position.x  && laser.laser_position.x <= enemy[i].position.x + enemy[i].size/2 &&
 				enemy[i].position.y - enemy[i].size/2 <= laser.laser_position.y && laser.laser_position.y <= enemy[i].position.y + enemy[i].size/2 ||
-				enemy[i].position.y - enemy[i].size <= laser.laser_position.y + laser.length && laser.laser_position.y + laser.length <= enemy[i].position.y + enemy[i].size/2)
+				enemy[i].position.y - enemy[i].size <= laser.laser_position.y + laser.length && laser.laser_position.y + laser.length <= enemy[i].position.y + enemy[i].size/2) {
+					if (!enemy[i].isDestroyed) {
+						enemy_left-=1;
+					}
 					enemy[i].destroyed();
+		}			
 	}
 }
 ///////////////////////////////////////////////////////
@@ -88,7 +101,7 @@ function Laser(x, y) {
 	this.laser_position = createVector(x, y);
 	reloadY = y;
 	length = 10;
-	this.speed = 5;
+	this.speed = 6;
 	this.ready = false;
 }
 
@@ -128,7 +141,6 @@ Ammo.prototype.fire = function fire(x, y) {
 	this.counter++;
 	if (this.counter >= this.size)
 		this.counter = 0;
-	console.log("Firing");
 }
 
 Ammo.prototype.draw = function draw() {
